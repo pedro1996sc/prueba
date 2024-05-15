@@ -8,77 +8,84 @@ use Illuminate\Http\Request;
 use App\Http\Requests\EventRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-
+use Illuminate\Support\Facades\Validator;
 class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request): View
-    {
-        $events = Event::paginate();
+   
+    public function create(Request $request) {
+       
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'status' => 'required',
+            'description' => 'required|max:255',
+            'day' => 'required|max:255',
+            'hour' => 'required|max:255'
+        ]);
 
-        return view('event.index', compact('events'))
-            ->with('i', ($request->input('page', 1) - 1) * $events->perPage());
+        if ($validator->fails()) {
+            $data = [
+                'message' => 'Error en la validación de los datos',
+                'errors' => $validator->errors(),
+                'status' => 400
+            ];
+            return response()->json($data, 400);
+        }
+
+        $event = Event::create([
+            'name' => $request->name,
+            'status' => $request->status,
+            'description' => $request->description,
+            'day' => $request->day,
+            'hour' => $request->hour,
+        ]);
+
+        if (!$event) {
+            $data = [
+                'message' => 'Error al crear el estudiante',
+                'status' => 500
+            ];
+            return response()->json($data, 500);
+        }
+
+        $data = [
+            'event' => $event,
+            'status' => 201     
+        ];
+
+        return response()->json($data, 201);
+
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): View
+   
+    public function show()
     {
-        $event = new Event();
+        $event = Event::where('status',true)->select('name', 'description')->get();
 
-        return view('event.create', compact('event'));
+        if (!$event) {
+            $data = [
+                'message' => 'evento no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+
+        $data = [
+            'event' => $event,
+            'status' => 200
+        ];
+
+        return response()->json($data, 200);
+    } 
+    
+   
+    public function showfull()
+    {   $events= Event::all();
+        if ($events->isEmpty()) { 
+            return response()->json([ 'message' => 'No hay eventos registrados'], 404); 
+            }
+        return response()->json($events, 200);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(EventRequest $request): RedirectResponse
-    {
-        Event::create($request->validated());
-
-        return Redirect::route('events.index')
-            ->with('success', 'Event created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($id): View
-    {
-        $event = Event::find($id);
-
-        return view('event.show', compact('event'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id): View
-    {
-        $event = Event::find($id);
-
-        return view('event.edit', compact('event'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(EventRequest $request, Event $event): RedirectResponse
-    {
-        $event->update($request->validated());
-
-        return Redirect::route('events.index')
-            ->with('success', 'Event updated successfully');
-    }
-
-    public function destroy($id): RedirectResponse
-    {
-        Event::find($id)->delete();
-
-        return Redirect::route('events.index')
-            ->with('success', 'Event deleted successfully');
-    }
+ 
+    
+   
 }

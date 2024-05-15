@@ -20,14 +20,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Event extends Model
 {
-    
+    public $timestamps = false;
     protected $perPage = 20;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'events';
+    
     protected $fillable = ['name', 'status', 'description', 'day', 'hour'];
 
 
