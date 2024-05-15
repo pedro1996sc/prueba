@@ -22,7 +22,7 @@ class Purchase extends Model
 {
     
     protected $perPage = 20;
-
+    public $timestamps = false;
     /**
      * The attributes that are mass assignable.
      *

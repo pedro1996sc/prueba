@@ -78,12 +78,28 @@ class EventController extends Controller
     } 
     
    
-    public function showfull()
-    {   $events= Event::all();
+    public function showfull(){   
+        $events= Event::all();
         if ($events->isEmpty()) { 
             return response()->json([ 'message' => 'No hay eventos registrados'], 404); 
             }
         return response()->json($events, 200);
+    }
+    public function showfilter($id){   
+        $events= Event::find($id);
+        if (!$events) {
+            $data = [
+                'message' => 'evento no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        $data = [
+            'event' => $events,
+            'status' => 200
+        ];
+
+        return response()->json($data, 200);
     }
  
     
